@@ -23,4 +23,5 @@ jobs:
           port: 22
           script: |
             cd /root/backend_projects/t3arena_be
+            chmod +x deploy.sh
             ./deploy.sh
