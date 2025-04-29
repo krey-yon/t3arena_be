@@ -195,7 +195,7 @@ function checkWinner(board: (null | "X" | "O")[]) {
 }
 
 app.get("/", (req, res) => {
-  res.send("WS server is running");
+  res.send("WS api server is running");
 });
 
 server.listen(port, () => {
