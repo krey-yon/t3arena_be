@@ -1,0 +1,24 @@
+name: deploy to vm
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: push to vm
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout the code
+        uses: actions/checkout@v2
+
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 194.61.31.176
+          username: root
+          key: ${{secrets.PRIVATE_KEY}}
+          port: 22
+          script: ./deploy.sh
