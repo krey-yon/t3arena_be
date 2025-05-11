@@ -11,12 +11,11 @@ const port = 3001;
 
 const waitingPlayers: WebSocket[] = [];
 const games = new Map();
-const gameClients = new Map(); // Maps gameId to connected clients
+const gameClients = new Map(); 
 
 wss.on("connection", (ws) => {
   console.log("A player connected");
   
-  // Add a property to track which game this socket belongs to
   ws.on("message", (message: any) => {
     const data = JSON.parse(message);
     console.log("Received message:", data);
@@ -29,19 +28,16 @@ wss.on("connection", (ws) => {
         
         const gameId = generateRoomCode();
         
-        // Create a new game
         games.set(gameId, {
           board: Array(9).fill(null),
           currentTurn: "X",
         });
         
-        // Store references to both clients for this game
         gameClients.set(gameId, {
           "X": player1,
           "O": player2
         });
         
-        // Tell each player about the match
         player1.send(JSON.stringify({ 
           type: "matchFound", 
           gameId, 
@@ -63,7 +59,6 @@ wss.on("connection", (ws) => {
     else if (data.type === "joinGame") {
       const { gameId, symbol } = data;
       
-      // Track which game this client belongs to
       (ws as any).gameId = gameId;
       (ws as any).symbol = symbol;
       
@@ -73,7 +68,6 @@ wss.on("connection", (ws) => {
         return;
       }
       
-      // Update the client reference in the gameClients map
       if (!gameClients.has(gameId)) {
         gameClients.set(gameId, {});
       }
@@ -83,7 +77,6 @@ wss.on("connection", (ws) => {
       
       console.log(`Player ${symbol} joined game ${gameId}`);
       
-      // Send the current game state to the player
       ws.send(JSON.stringify({
         type: "gameUpdate",
         board: game.board,
@@ -109,15 +102,12 @@ wss.on("connection", (ws) => {
         return;
       }
       
-      // Update the game state
       game.board[position] = symbol;
       game.currentTurn = symbol === "X" ? "O" : "X";
       
-      // Check for a winner or draw
       const winner = checkWinner(game.board);
       const isDraw = !game.board.includes(null) && !winner;
       
-      // Prepare the update message
       const updateMessage = JSON.stringify({
         type: "gameUpdate",
         board: game.board,
@@ -128,7 +118,6 @@ wss.on("connection", (ws) => {
       
       console.log(`Updated game state for ${gameId}:`, game.board);
       
-      // Send the update to both players
       const clients = gameClients.get(gameId);
       if (clients) {
         if (clients["X"]) {
@@ -144,20 +133,17 @@ wss.on("connection", (ws) => {
   ws.on("close", () => {
     console.log("A player disconnected");
     
-    // Remove from waiting players
     const index = waitingPlayers.indexOf(ws);
     if (index !== -1) {
       waitingPlayers.splice(index, 1);
     }
     
-    // Handle disconnection from a game
     const gameId = (ws as any).gameId;
     const symbol = (ws as any).symbol;
     
     if (gameId && symbol) {
       console.log(`Player ${symbol} disconnected from game ${gameId}`);
       
-      // Inform the other player
       const clients = gameClients.get(gameId);
       if (clients) {
         const otherSymbol = symbol === "X" ? "O" : "X";
@@ -170,7 +156,6 @@ wss.on("connection", (ws) => {
           }));
         }
         
-        // Remove the disconnected player from the game
         clients[symbol] = null;
       }
     }
@@ -179,9 +164,9 @@ wss.on("connection", (ws) => {
 
 function checkWinner(board: (null | "X" | "O")[]) {
   const winPatterns = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
-    [0, 4, 8], [2, 4, 6]             // diagonals
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+    [0, 4, 8], [2, 4, 6]             
   ];
   
   for (const pattern of winPatterns) {
